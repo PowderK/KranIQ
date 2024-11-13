@@ -1,0 +1,695 @@
+<html><head><base href="https://example.com">
+<meta charset="UTF-8">
+<title>Zugkraft-Rechner</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #1a1a1a;
+        color: #ffffff;
+    }
+    #landing {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    .logo {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 30px;
+    }
+    .start-button {
+        background-color: #ff4444;
+        color: white;
+        padding: 15px 30px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 20px;
+    }
+    .start-button:hover {
+        background-color: #ee3333;
+    }
+    .title {
+        font-size: 24px;
+        margin: 20px 0;
+    }
+    .subtitle {
+        font-size: 18px;
+        color: #999;
+        margin-bottom: 30px;
+    }
+    .container {
+        background-color: #2d2d2d;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        position: relative;
+        margin-top: 20px;
+    }
+    .page {
+        display: none;
+    }
+    .page.active {
+        display: block;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+    input[type="number"], select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #444;
+        border-radius: 4px;
+        font-size: 1.1em;
+        margin: 10px 0;
+        background-color: #3d3d3d;
+        color: white;
+    }
+    .navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+    button {
+        background-color: #2196F3;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    button:hover {
+        background-color: #1976D2;
+    }
+    button:disabled {
+        background-color: #444444;
+        cursor: not-allowed;
+    }
+    .formula {
+        background-color: #3d3d3d;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 20px;
+        font-family: monospace;
+    }
+    .unit-selector {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+    }
+    .unit-selector label {
+        display: inline-block;
+        margin: 0;
+        font-weight: normal;
+    }
+    .unit-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 10px 0;
+    }
+    .number-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+        padding: 10px 20px;
+        background-color: #3d3d3d;
+        border: 2px solid #444;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1.1em;
+        color: white;
+    }
+    .number-button.selected {
+        background-color: #2196F3;
+        color: white;
+        border-color: #1976D2;
+    }
+    .number-button svg {
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+    .number-button img {
+        filter: brightness(0) invert(1);
+        width: 24px;
+        height: 24px;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+    select option {
+        background-color: #3d3d3d;
+        color: white;
+    }
+    .beta-banner {
+        position: fixed;
+        top: 20px;
+        right: -50px;
+        background-color: #ff4444;
+        color: white;
+        padding: 5px 50px;
+        transform: rotate(45deg);
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 1000;
+    }
+    .progress-bar {
+        width: 100%;
+        height: 10px;
+        background-color: #444;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background-color: #2196F3;
+        transition: width 0.3s ease;
+    }
+</style>
+<script>
+let currentPage = 1;
+let pageHistory = ['landing'];
+
+function showPage(pageNum) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    let pageId;
+    if (typeof pageNum === 'number') {
+        pageId = 'page' + pageNum;
+    } else if (typeof pageNum === 'string') {
+        pageId = pageNum;
+    }
+    const page = document.getElementById(pageId);
+    if (page) {
+        page.classList.add('active');
+        currentPage = pageNum;
+        if (pageHistory[pageHistory.length - 1] !== pageId && pageId !== 'landing') {
+            pageHistory.push(pageId);
+        }
+    } else {
+        console.error('Page not found:', pageId);
+    }
+}
+
+function startCalculator() {
+    document.getElementById('landing').classList.remove('active');
+    document.getElementById('page1').classList.add('active');
+}
+
+function goBack() {
+    if (pageHistory.length > 1) {
+        pageHistory.pop();
+        const previousPage = pageHistory[pageHistory.length - 1];
+        pageHistory.pop();
+        showPage(previousPage);
+    }
+}
+
+function selectMassMethod(method) {
+    const inputs = [
+        'achsen',
+        'fahrzeugtyp', 
+        'gesamtachsen',
+        'doppelachsen',
+        'beladung',
+        'gebremsteAchsen',
+        'untergrund',
+        'steigung',
+        'masse'
+    ];
+    
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.value = '';
+        }
+    });
+    
+    const kgRadio = document.getElementById('kg');
+    if (kgRadio) {
+        kgRadio.checked = true;
+    }
+
+    document.querySelectorAll('.number-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+
+    pageHistory = ['page1'];
+    if (method === 'direct') {
+        showPage('page1a');
+    } else if (method === 'estimate') {
+        showPage('page2a');
+    }
+}
+
+function selectType(type) {
+    selectButtonAndSetValue('fahrzeugtyp', type);
+    
+    if (type === 'pkw') {
+        document.getElementById('gesamtachsen').value = '2';
+        document.getElementById('doppelachsen').value = '0';
+        showPage('page2d');
+    } else {
+        showPage('page2b');
+    }
+}
+
+function selectGesamtachsen(num) {
+    selectButtonAndSetValue('gesamtachsen', num);
+    
+    const doppelachsenButtons = document.getElementById('doppelachsenButtons');
+    doppelachsenButtons.innerHTML = '';
+    const maxDoppel = num - 1;
+    for (let i = 0; i <= maxDoppel; i++) {
+        doppelachsenButtons.innerHTML += `<button class="number-button" onclick="selectDoppelachsen(${i})">${i}</button>`;
+    }
+    showPage('page2c');
+}
+
+function selectDoppelachsen(num) {
+    selectButtonAndSetValue('doppelachsen', num);
+    showPage('page2d');
+}
+
+function selectLoad(load) {
+    selectButtonAndSetValue('beladung', load);
+    const estimatedMass = calculateEstimatedMass();
+    document.getElementById('masse').value = (estimatedMass / 1000).toFixed(2);
+    document.getElementById('t').checked = true;
+    
+    const gesamtachsen = parseInt(document.getElementById('gesamtachsen').value);
+    document.getElementById('achsen').value = gesamtachsen;
+    
+    const gebremsteButtons = document.getElementById('gebremsteAchsenButtons');
+    gebremsteButtons.innerHTML = '';
+    for (let i = 0; i <= gesamtachsen; i++) {
+        gebremsteButtons.innerHTML += `<button class="number-button" onclick="selectGebremsteAchsen(${i})">${i}</button>`;
+    }
+    showPage(3);
+}
+
+function selectGebremsteAchsen(number) {
+    document.querySelectorAll('#page3 .number-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+    document.getElementById('gebremsteAchsen').value = number;
+    showPage(4);
+}
+
+function selectUntergrund(type) {
+    selectButtonAndSetValue('untergrund', type);
+    showPage(5);
+}
+
+function selectSteigung(value) {
+    document.querySelectorAll('#page5 .number-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+    document.getElementById('steigung').value = value;
+    berechneZugkraft();
+}
+
+function berechneZugkraft() {
+    const masse = getMasseInKg();
+    const achsen = parseInt(document.getElementById('achsen').value);
+    const gebremsteAchsen = parseInt(document.getElementById('gebremsteAchsen').value);
+    const untergrund = document.getElementById('untergrund').value;
+    const steigung = parseFloat(document.getElementById('steigung').value);
+
+    const reibungskoeffizienten = {
+        strasse: 25,
+        kies: 1,
+        rasen: 3
+    };
+
+    const zugkraft = ((masse / reibungskoeffizienten[untergrund]) + 
+                     (masse * steigung / 60) + 
+                     (masse * gebremsteAchsen / achsen)) / 1000;
+
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    
+    const resultDiv = document.getElementById('result');
+    resultDiv.classList.add('active');
+    
+    const originalMasse = document.getElementById('masse').value;
+    const originalUnit = document.querySelector('input[name="unit"]:checked').value;
+    
+    let zugkraftDisplay;
+    if (zugkraft < 1) {
+        zugkraftDisplay = `${(zugkraft * 1000).toFixed(0)} kg`;
+    } else {
+        zugkraftDisplay = `${zugkraft.toFixed(2)} t`;
+    }
+
+    let resultContent = `
+        <h1>Ergebnis</h1>
+        <div class="formula">
+            <h3>Eingegebene Werte:</h3>
+            <p>Masse (m) = ${originalMasse} ${originalUnit} (=${masse} kg)</p>
+            <p>Achsen gesamt = ${achsen}</p>
+            <p>Gebremste Achsen = ${gebremsteAchsen}</p>
+            <p>Untergrund = ${untergrund} (Faktor = ${reibungskoeffizienten[untergrund]})</p>
+            <p>Steigung = ${steigung}%</p>
+        </div>
+        
+        <div class="formula" style="background-color: #2196F3; margin-top: 30px;">
+            <h2 style="margin-top: 0; color: white;">Benötigte Zugkraft:</h2>
+            <p style="font-size: 24px; margin: 10px 0; color: white;">${zugkraftDisplay}</p>
+        </div>
+        
+        <div class="formula" style="margin-top: 30px;">
+            <h3>Berechnungsformel:</h3>
+            <p>F = ((m / Untergrund) + (m * Steigung / 60) + (m * Achsen_gebremst / Achsen_gesamt)) / 1000</p>
+            <p>F = ((${masse} / ${reibungskoeffizienten[untergrund]}) + (${masse} * ${steigung} / 60) + (${masse} * ${gebremsteAchsen} / ${achsen})) / 1000</p>
+        </div>
+    `;
+
+    if (steigung > 30) {
+        resultContent += '<p style="color: red;"><strong>Achtung: Steigung über 30% - Extreme Vorsicht geboten!</strong></p>';
+    }
+
+    resultContent += '<div class="navigation"><button onclick="resetCalculator()">Neue Berechnung</button></div>';
+    
+    resultDiv.innerHTML = resultContent;
+}
+
+function resetCalculator() {
+    document.getElementById('achsen').value = '';
+    document.getElementById('fahrzeugtyp').value = '';
+    document.getElementById('gesamtachsen').value = '';
+    document.getElementById('doppelachsen').value = '';
+    document.getElementById('beladung').value = '';
+    document.getElementById('gebremsteAchsen').value = '';
+    document.getElementById('untergrund').value = '';
+    document.getElementById('steigung').value = '';
+    document.getElementById('masse').value = '';
+    document.getElementById('kg').checked = true;
+    
+    document.querySelectorAll('.number-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    
+    pageHistory = [];
+    showPage('landing');
+}
+
+function getMasseInKg() {
+    const masseValue = parseFloat(document.getElementById('masse').value);
+    const unit = document.querySelector('input[name="unit"]:checked').value;
+    return unit === 't' ? masseValue * 1000 : masseValue;
+}
+
+function selectButtonAndSetValue(inputId, value) {
+    const buttonGroup = event.target.parentElement;
+    buttonGroup.querySelectorAll('.number-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
+    document.getElementById(inputId).value = value;
+}
+
+function calculateEstimatedMass() {
+    const fahrzeugtyp = document.getElementById('fahrzeugtyp').value;
+    const gesamtachsen = parseInt(document.getElementById('gesamtachsen').value);
+    const doppelachsen = parseInt(document.getElementById('doppelachsen').value);
+    const beladung = document.getElementById('beladung').value;
+    
+    const typeFactors = {
+        'pkw': 4.8,
+        'transporter': 2.42,
+        'lkw_klein': 1.35,
+        'lkw_gross': 1
+    };
+    
+    const loadFactors = {
+        'leer': 0.5,
+        'halb': 0.75,
+        'voll': 1
+    };
+    
+    const einzelachsen = gesamtachsen - (doppelachsen * 2);
+    
+    const masse = (((einzelachsen * 6000) / typeFactors[fahrzeugtyp]) + 
+                  ((doppelachsen * 12000) / typeFactors[fahrzeugtyp])) * 
+                 loadFactors[beladung];
+    
+    return masse;
+}
+
+function validateAndContinue() {
+    const masseInput = document.getElementById('masse');
+    if (masseInput.value && masseInput.value > 0) {
+        const gesamtachsen = 2; // Default value
+        document.getElementById('achsen').value = gesamtachsen;
+        
+        const gebremsteButtons = document.getElementById('gebremsteAchsenButtons');
+        gebremsteButtons.innerHTML = '';
+        for (let i = 0; i <= gesamtachsen; i++) {
+            gebremsteButtons.innerHTML += `<button class="number-button" onclick="selectGebremsteAchsen(${i})">${i}</button>`;
+        }
+        showPage(3);
+    } else {
+        alert('Bitte geben Sie eine gültige Masse ein.');
+    }
+}
+</script>
+</head>
+<body>
+<div class="beta-banner">BETA</div>
+<div id="landing" class="page active">
+    <img src="/IMG_6303.png" alt="Hannover Feuerwehr Station 5 Logo - Ein schwarz-gelbes Logo mit Feuerwehrfahrzeugen, Kran und Hannover TV Turm" class="logo">
+    <h1 class="title">Zugkraft-Rechner</h1>
+    <p class="subtitle">Feuerwehr Hannover - Station 5</p>
+    <button class="start-button" onclick="startCalculator()">Berechnung starten</button>
+</div>
+<div class="container">
+    <input type="hidden" id="achsen" value="">
+    <div id="page1" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 20%"></div>
+        </div>
+        <h1>Masse bestimmen</h1>
+        <div class="button-group">
+            <button class="number-button" onclick="selectMassMethod('direct')">Direkte Eingabe</button>
+            <button class="number-button" onclick="selectMassMethod('estimate')">Masse schätzen</button>
+        </div>
+    </div>
+
+    <div id="page1a" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 20%"></div>
+        </div>
+        <h1>Masse eingeben</h1>
+        <div class="form-group">
+            <label for="masse">Gesamtmasse:</label>
+            <div class="unit-group">
+                <input type="number" id="masse" min="0" required>
+                <div class="unit-selector">
+                    <input type="radio" id="kg" name="unit" value="kg" checked>
+                    <label for="kg">kg</label>
+                    <input type="radio" id="t" name="unit" value="t">
+                    <label for="t">t</label>
+                </div>
+            </div>
+        </div>
+        <div class="navigation">
+            <button onclick="goBack()">Zurück</button>
+            <button onclick="validateAndContinue()">Weiter</button>
+        </div>
+    </div>
+
+    <div id="page2a" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 40%"></div>
+        </div>
+        <h1>Fahrzeugtyp</h1>
+        <div class="form-group">
+            <label>Fahrzeugtyp:</label>
+            <div class="button-group">
+                <button class="number-button" onclick="selectType('pkw')">
+                    <img src="/PKW.png" alt="Simple car icon">
+                    PKW
+                </button>
+                <button class="number-button" onclick="selectType('transporter')">
+                    <img src="/Transporter.png" alt="Delivery van icon">
+                    Transporter
+                </button>
+                <button class="number-button" onclick="selectType('lkw_klein')">
+                    <img src="/Lkw_klein.png" alt="Small truck icon">
+                    LKW klein
+                </button>
+                <button class="number-button" onclick="selectType('lkw_gross')">
+                    <img src="/LKW_groß.png" alt="Large box truck icon">
+                    LKW groß
+                </button>
+            </div>
+            <input type="hidden" id="fahrzeugtyp" value="">
+        </div>
+        <div class="navigation">
+            <button onclick="goBack()">Zurück</button>
+        </div>
+    </div>
+
+    <div id="page2b" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 40%"></div>
+        </div>
+        <h1>Achsenanzahl</h1>
+        <div class="form-group">
+            <label>Gesamtanzahl Achsen:</label>
+            <div class="button-group">
+                <button class="number-button" onclick="selectGesamtachsen(2)">2</button>
+                <button class="number-button" onclick="selectGesamtachsen(3)">3</button>
+                <button class="number-button" onclick="selectGesamtachsen(4)">4</button>
+                <button class="number-button" onclick="selectGesamtachsen(5)">5</button>
+                <button class="number-button" onclick="selectGesamtachsen(6)">6</button>
+                <button class="number-button" onclick="selectGesamtachsen(7)">7</button>
+                <button class="number-button" onclick="selectGesamtachsen(8)">8</button>
+            </div>
+            <input type="hidden" id="gesamtachsen" value="">
+        </div>
+        <div class="navigation">
+            <button onclick="goBack()">Zurück</button>
+        </div>
+    </div>
+
+    <div id="page2c" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 40%"></div>
+        </div>
+        <h1>Doppelachsen</h1>
+        <div class="form-group">
+            <label>Davon Doppelachsen:</label>
+            <div id="doppelachsenButtons" class="button-group">
+            </div>
+            <input type="hidden" id="doppelachsen" value="">
+        </div>
+        <div class="navigation">
+            <button onclick="goBack()">Zurück</button>
+        </div>
+    </div>
+
+    <div id="page2d" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 40%"></div>
+        </div>
+        <h1>Beladung</h1>
+        <div class="form-group">
+            <label>Beladung:</label>
+            <div class="button-group">
+                <button class="number-button" onclick="selectLoad('leer')">
+                    <img src="/leer.png" alt="Black square representing empty load">
+                    Leer
+                </button>
+                <button class="number-button" onclick="selectLoad('halb')">
+                    <img src="/halb.png" alt="Black square representing half load">
+                    Halb
+                </button>
+                <button class="number-button" onclick="selectLoad('voll')">
+                    <img src="/voll.png" alt="Black square representing full load">
+                    Voll
+                </button>
+            </div>
+            <input type="hidden" id="beladung" value="">
+        </div>
+        <div class="navigation">
+            <button onclick="goBack()">Zurück</button>
+        </div>
+    </div>
+
+    <div id="page3" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 60%"></div>
+        </div>
+        <h1>Gebremste Achsen</h1>
+        <div class="form-group">
+            <label>Anzahl der gebremsten Achsen:</label>
+            <div id="gebremsteAchsenButtons" class="button-group">
+            </div>
+            <input type="hidden" id="gebremsteAchsen" value="">
+        </div>
+        <div class="navigation">
+            <button onclick="goBack()">Zurück</button>
+        </div>
+    </div>
+
+    <div id="page4" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 80%"></div>
+        </div>
+        <h1>Untergrund</h1>
+        <div class="form-group">
+            <label>Untergrund:</label>
+            <div class="button-group">
+                <button class="number-button" onclick="selectUntergrund('strasse')">
+                    <img src="/strasse.png" alt="Black square representing road surface">
+                    Straße
+                </button>
+                <button class="number-button" onclick="selectUntergrund('kies')">
+                    <img src="/kies.png" alt="Black square representing gravel">
+                    Kies
+                </button>
+                <button class="number-button" onclick="selectUntergrund('rasen')">
+                    <img src="/gras.png" alt="Simple black and white grass tuft">
+                    Rasen
+                </button>
+            </div>
+            <input type="hidden" id="untergrund" value="">
+        </div>
+        <div class="navigation">
+            <button onclick="goBack()">Zurück</button>
+        </div>
+    </div>
+
+    <div id="page5" class="page">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 100%"></div>
+        </div>
+        <h1>Steigung</h1>
+        <div class="form-group">
+            <label>Steigung:</label>
+            <div class="button-group">
+                <button class="number-button" onclick="selectSteigung(0)">
+                    <img src="/flach.png" alt="Black square representing flat terrain">
+                    Flach (0%)
+                </button>
+                <button class="number-button" onclick="selectSteigung(15)">
+                    <img src="/mittel.png" alt="Black square representing medium slope">
+                    Mittel (15%)
+                </button>
+                <button class="number-button" onclick="selectSteigung(30)">
+                    <img src="/steil.png" alt="Black square representing steep slope">
+                    Steil (30%)
+                </button>
+            </div>
+            <input type="hidden" id="steigung" value="">
+        </div>
+        <div class="navigation">
+            <button onclick="goBack()">Zurück</button>
+        </div>
+    </div>
+
+    <div id="result" class="page"></div>
+</div>
+
+</body>
+</html>
