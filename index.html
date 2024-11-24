@@ -1,5 +1,7 @@
-<html><head><base href="https://powderk.github.io/KranIQ/">
+<html><head><base href="https://powderk.github.io/KranIQ">
+<html><head><base href="https://example.com">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Zugkraftberechnung</title>
 <style>
     body {
@@ -219,6 +221,126 @@
         color: #999;
         margin-top: 30px;
         text-align: center;
+    }
+    @media screen and (max-width: 600px) {
+        body {
+            padding: 10px;
+            margin: 0;
+            max-width: 100%;
+        }
+
+        .container {
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .logo {
+            height: 150px; /* Smaller logo for mobile */
+            width: auto;
+            max-width: 100%;
+        }
+
+        .title {
+            font-size: 20px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+        }
+
+        .start-button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+        }
+
+        .button-group {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .number-button {
+            width: 100% !important;
+            min-width: unset !important;
+            height: 60px;
+            padding: 8px;
+            font-size: 16px;
+            margin: 0 !important;
+            flex: unset !important;
+        }
+
+        .navigation {
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .navigation button {
+            width: 100%;
+        }
+
+        input[type="number"], select {
+            font-size: 16px;
+            padding: 8px;
+        }
+
+        .unit-group {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .unit-selector {
+            width: 100%;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+
+        .formula {
+            font-size: 14px;
+            padding: 10px;
+            overflow-x: auto;
+        }
+
+        /* Adjust beta banner for mobile */
+        .beta-banner {
+            font-size: 12px;
+            padding: 3px 40px;
+            right: -45px;
+            top: 15px;
+        }
+
+        /* Make images in buttons smaller on mobile */
+        .number-button img {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Adjust progress bar */
+        .progress-bar {
+            margin: 10px 0;
+        }
+
+        /* Adjust headings */
+        h1 {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        /* Adjust form groups */
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-size: 16px;
+        }
+
+        /* Adjust copyright text */
+        .copyright {
+            font-size: 11px;
+            margin: 20px 0;
+            padding: 0 10px;
+        }
     }
 </style>
 <script>
@@ -531,7 +653,7 @@ function selectDirectAxles(number) {
 <body>
 <div class="beta-banner">BETA</div>
 <div id="landing" class="page active">
-    <img src="Logo_Zugkraftberechnung.png" alt="Logo Zugkraftberechnung" class="logo">
+    <img src="/Logo_Zugkraftberechnung.png" alt="A cartoon illustration of a man in a suit and glasses, with a joyful expression and his hands clasped together. The backdrop features the words 'FEUERWEHR HANNOVER' in yellow lettering, suggesting affiliation with the Hanover Fire Department." class="logo">
     <h1 class="title">Zugkraftberechnung</h1>
     <p class="subtitle">Feuerwehr Hannover - Feuer- und Rettungswache 5</p>
     <p style="color: #ff4444; font-size: 14px; margin: 20px 0; padding: 10px; border: 1px solid #ff4444; border-radius: 4px;">
@@ -609,19 +731,19 @@ function selectDirectAxles(number) {
             <label>Fahrzeugtyp:</label>
             <div class="button-group">
                 <button class="number-button" onclick="selectType('pkw')">
-                    <img src="PKW.png" alt="Simple car icon">
+                    <img src="/PKW.png" alt="Simple car icon">
                     PKW
                 </button>
                 <button class="number-button" onclick="selectType('transporter')">
-                    <img src="Transporter.png" alt="Delivery van icon">
+                    <img src="/Transporter.png" alt="Delivery van icon">
                     Transporter
                 </button>
                 <button class="number-button" onclick="selectType('lkw_klein')">
-                    <img src="Lkw_klein.png" alt="Small truck icon">
+                    <img src="/Lkw_klein.png" alt="Small truck icon">
                     LKW klein
                 </button>
                 <button class="number-button" onclick="selectType('lkw_gross')">
-                    <img src="LKW_groß.png" alt="Large box truck icon">
+                    <img src="/LKW_groß.png" alt="Large box truck icon">
                     LKW groß
                 </button>
             </div>
@@ -680,15 +802,15 @@ function selectDirectAxles(number) {
             <label>Beladung:</label>
             <div class="button-group">
                 <button class="number-button" onclick="selectLoad('leer')">
-                    <img src="leer.png" alt="Black square representing empty load">
+                    <img src="/leer.png" alt="Black square representing empty load">
                     Leer
                 </button>
                 <button class="number-button" onclick="selectLoad('halb')">
-                    <img src="halb.png" alt="Black square representing half load">
+                    <img src="/halb.png" alt="Black square representing half load">
                     Halb
                 </button>
                 <button class="number-button" onclick="selectLoad('voll')">
-                    <img src="voll.png" alt="Black square representing full load">
+                    <img src="/voll.png" alt="Black square representing full load">
                     Voll
                 </button>
             </div>
@@ -724,15 +846,15 @@ function selectDirectAxles(number) {
             <label>Untergrund:</label>
             <div class="button-group">
                 <button class="number-button" onclick="selectUntergrund('strasse')">
-                    <img src="strasse.png" alt="Black square representing road surface">
+                    <img src="/strasse.png" alt="Black square representing road surface">
                     Straße
                 </button>
                 <button class="number-button" onclick="selectUntergrund('kies')">
-                    <img src="kies.png" alt="Black square representing gravel">
+                    <img src="/kies.png" alt="Black square representing gravel">
                     Kies
                 </button>
                 <button class="number-button" onclick="selectUntergrund('rasen')">
-                    <img src="gras.png" alt="Simple black and white grass tuft">
+                    <img src="/gras.png" alt="Simple black and white grass tuft">
                     Rasen
                 </button>
             </div>
@@ -752,15 +874,15 @@ function selectDirectAxles(number) {
             <label>Steigung:</label>
             <div class="button-group">
                 <button class="number-button" onclick="selectSteigung(0)">
-                    <img src="flach.png" alt="Black square representing flat terrain">
+                    <img src="/flach.png" alt="Black square representing flat terrain">
                     Flach (0%)
                 </button>
                 <button class="number-button" onclick="selectSteigung(15)">
-                    <img src="mittel.png" alt="Black square representing medium slope">
+                    <img src="/mittel.png" alt="Black square representing medium slope">
                     Mittel (15%)
                 </button>
                 <button class="number-button" onclick="selectSteigung(30)">
-                    <img src="steil.png" alt="Black square representing steep slope">
+                    <img src="/steil.png" alt="Black square representing steep slope">
                     Steil (30%)
                 </button>
             </div>
