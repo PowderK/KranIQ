@@ -1,6 +1,10 @@
 <html><head><base href="https://powderk.github.io/KranIQ/">
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="175fd17d-82ca-42d5-8b77-69d705bbaf6d-removebg-preview.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Zugkraftberechnung</title>
 <style>
     body {
@@ -181,18 +185,6 @@
         background-color: #3d3d3d;
         color: white;
     }
-    .beta-banner {
-        position: fixed;
-        top: 20px;
-        right: -50px;
-        background-color: #ff4444;
-        color: white;
-        padding: 5px 50px;
-        transform: rotate(45deg);
-        font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        z-index: 1000;
-    }
     .progress-bar {
         width: 100%;
         height: 10px;
@@ -300,20 +292,6 @@
             overflow-x: auto;
         }
 
-        /* Adjust beta banner for mobile */
-        .beta-banner {
-            font-size: 12px;
-            padding: 3px 40px;
-            right: -45px;
-            top: 15px;
-        }
-
-        /* Make images in buttons smaller on mobile */
-        .number-button img {
-            width: 20px;
-            height: 20px;
-        }
-
         /* Adjust progress bar */
         .progress-bar {
             margin: 10px 0;
@@ -343,6 +321,68 @@
     }
 </style>
 <script>
+function toggleFullScreen() {
+    try {
+        const doc = window.document;
+        const docEl = doc.documentElement;
+
+        // Check if fullscreen is available
+        if (!docEl.requestFullscreen && 
+            !docEl.mozRequestFullScreen && 
+            !docEl.webkitRequestFullScreen && 
+            !docEl.msRequestFullscreen) {
+            console.log('Fullscreen API not available');
+            return;
+        }
+
+        const requestFullScreen = docEl.requestFullscreen || 
+                                docEl.mozRequestFullScreen || 
+                                docEl.webkitRequestFullScreen || 
+                                docEl.msRequestFullscreen;
+
+        const cancelFullScreen = doc.exitFullscreen || 
+                               doc.mozCancelFullScreen || 
+                               doc.webkitExitFullscreen || 
+                               doc.msExitFullscreen;
+
+        if (!doc.fullscreenElement && 
+            !doc.mozFullScreenElement && 
+            !doc.webkitFullscreenElement && 
+            !doc.msFullscreenElement) {
+            if (requestFullScreen) {
+                requestFullScreen.call(docEl).catch(err => {
+                    console.log('Error attempting to enable fullscreen:', err);
+                });
+            }
+        }
+    } catch (error) {
+        console.log('Error in toggleFullScreen:', error);
+    }
+}
+
+// Update the load event listener to handle errors gracefully
+window.addEventListener('load', function() {
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        try {
+            toggleFullScreen();
+        } catch (error) {
+            console.log('Error trying to enter fullscreen on load:', error);
+        }
+    }
+});
+
+// Update the visibility change event listener to handle errors gracefully
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        try {
+            toggleFullScreen();
+        } catch (error) {
+            console.log('Error trying to enter fullscreen on visibility change:', error);
+        }
+    }
+});
+
 let currentPage = 1;
 let pageHistory = ['landing'];
 
@@ -516,9 +556,6 @@ function berechneZugkraft() {
     const resultDiv = document.getElementById('result');
     resultDiv.classList.add('active');
     
-    const originalMasse = document.getElementById('masse').value;
-    const originalUnit = document.querySelector('input[name="unit"]:checked').value;
-    
     let zugkraftDisplay;
     if (zugkraft < 1) {
         zugkraftDisplay = `${(zugkraft * 1000).toFixed(0)} kg`;
@@ -528,25 +565,17 @@ function berechneZugkraft() {
 
     let resultContent = `
         <h1>Ergebnis</h1>
-        <div class="formula">
-            <h3>Eingegebene Werte:</h3>
-            <p>Masse (m) = ${originalMasse} ${originalUnit} (=${masse} kg)</p>
-            <p>Achsen gesamt = ${achsen}</p>
-            <p>Gebremste Achsen = ${gebremsteAchsen}</p>
-            <p>Untergrund = ${untergrund} (Faktor = ${reibungskoeffizienten[untergrund]})</p>
-            <p>Steigung = ${steigung}%</p>
-        </div>
         
-        <div class="formula" style="background-color: #2196F3; margin-top: 30px;">
-            <h2 style="margin-top: 0; color: white;">Benötigte Zugkraft:</h2>
+        <div class="formula" style="background-color: #2196F3; margin: 20px 0;">
+            <h2 style="margin-top: 0; color: white;">Benötigte Zugkraft (geschätzt):</h2>
             <p style="font-size: 24px; margin: 10px 0; color: white;">${zugkraftDisplay}</p>
         </div>
         
-        <div class="formula" style="margin-top: 30px;">
-            <h3>Berechnungsformel:</h3>
-            <p>F = ((m / Untergrund) + (m * Steigung / 60) + (m * Achsen_gebremst / Achsen_gesamt)) / 1000</p>
-            <p>F = ((${masse} / ${reibungskoeffizienten[untergrund]}) + (${masse} * ${steigung} / 60) + (${masse} * ${gebremsteAchsen} / ${achsen})) / 1000</p>
-        </div>
+        <p style="color: #ff4444; font-size: 14px; margin: 20px 0; padding: 10px; border: 1px solid #ff4444; border-radius: 4px;">
+            Hinweis: Bei dem berechneten Wert handelt es sich um einen Schätzwert zur groben Orientierung. 
+            Der Kranmaschinist trägt die volle Verantwortung für sein Handeln und muss die örtlichen 
+            Gegebenheiten sowie weitere Einflussfaktoren eigenständig bewerten.
+        </p>
     `;
 
     if (steigung > 30) {
@@ -647,14 +676,21 @@ function selectDirectAxles(number) {
     }
     showPage(3);
 }
+
+// Add event listener for page visibility changes
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        toggleFullScreen();
+    }
+});
 </script>
 </head>
 <body>
-<div class="beta-banner">BETA</div>
 <div id="landing" class="page active">
     <img src="Logo_Zugkraftberechnung.png" alt="A cartoon illustration of a man in a suit and glasses, with a joyful expression and his hands clasped together. The backdrop features the words 'FEUERWEHR HANNOVER' in yellow lettering, suggesting affiliation with the Hanover Fire Department." class="logo">
     <h1 class="title">Zugkraftberechnung</h1>
     <p class="subtitle">Feuerwehr Hannover - Feuer- und Rettungswache 5</p>
+    <p style="font-size: 16px; color: #999; margin-bottom: 20px;">Version 1.0</p>
     <p style="color: #ff4444; font-size: 14px; margin: 20px 0; padding: 10px; border: 1px solid #ff4444; border-radius: 4px;">
         Hinweis: Bei den berechneten Werten handelt es sich um Schätzwerte zur groben Orientierung. Der Kranmaschinist trägt die volle Verantwortung für sein Handeln und muss die örtlichen Gegebenheiten sowie weitere Einflussfaktoren eigenständig bewerten.
     </p>
@@ -766,7 +802,7 @@ function selectDirectAxles(number) {
                 <button class="number-button" onclick="selectGesamtachsen(4)">4</button>
                 <button class="number-button" onclick="selectGesamtachsen(5)">5</button>
                 <button class="number-button" onclick="selectGesamtachsen(6)">6</button>
-                <button class="number-button" onclick="selectGesamtachsen(7)">7</button>
+                <button class="number-button" onclick="selectGesamtzahlen(7)">7</button>
                 <button class="number-button" onclick="selectGesamtzahlen(8)">8</button>
             </div>
             <input type="hidden" id="gesamtachsen" value="">
