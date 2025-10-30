@@ -1,0 +1,16 @@
+{
+  "name": "kraniq-electron",
+  "version": "0.1.0",
+  "description": "Electron wrapper for the KranIQ web app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-packager . KranIQ --platform=darwin --arch=x64 --out=dist --overwrite"
+  },
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "electron-packager": "^17.1.1"
+  },
+  "author": "",
+  "license": "MIT"
+}
