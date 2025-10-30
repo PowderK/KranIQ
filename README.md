@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+# KranIQ
+
 # KranIQ
 
 ## Electron
